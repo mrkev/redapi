@@ -24,6 +24,7 @@ router
   .route('/')
   .get (req, res) ->
     res.sendFile __dirname + '/info.txt'
+    console.log process.version
     return
 
 # ## Roster@Katara
