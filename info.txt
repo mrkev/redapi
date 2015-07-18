@@ -1,0 +1,179 @@
+RedAPI v3.4.2
+
+
+Usage:
+
+PATH                    DESCRIPTION
+
+/                       Returns this page (plain text format).
+        
+
+                        DINNING CALENDAR
+        
+/dining                 Returns array of id’s for all dining options with 
+                        information in this API.
+
+/dining/:id             Returns calendar object for dinning hall with id :id.
+
+/dining/menu/:locations/:meals/:sort
+
+                        :locations - comma separated dinning hall ids. Note: not
+                            all halls have menus. 
+                        :meals - one or more of 'Breakfast', 'Lunch', 'Brunch' or 
+                            'Dinner'. comma separated values.
+                        :sort - one of
+                          'MEALS' : returns object with meal keys, dinning hall values
+                          'LOCATIONS' : returns object with location keys, meal values
+                        
+                        Sample Query: 
+                        eg. /dining/menu/okenshields,north_star/Breakfast/MEALS
+
+
+/dining/event/:locations/:date_range
+
+                        :locations - comma separated dinning hall ids.
+                        :date_range - A range in format start-end. All events from 
+                            start up to but not including end will be returned. 
+
+                            Date range supports any format supported by the datejs
+                            library. Eg. 
+
+                            - today-tomorrow
+                            - April 6, 2015-April 8, 2015
+                              NOTE: Needs to be escaped to April%206,%202015-April%208,%202015
+                        
+                        Sample Query:
+                        eg./dining/event/okenshields,north_star/April%206,%202015-April%208,%202015
+
+
+                        ROSTER
+        
+/roster                 Returns a JSON object with list of subject codes, subject 
+                        descriptions for the current term.
+/roster/%term%          Returns a JSON object with list of subject codes, subject 
+                        descriptions for term %term%.
+/roster/%term%/%subj%   Returns JSON object with information of all courses in 
+                        subject %subj% for term %term%.
+
+
+                        PRINTING
+        
+/print                  Returns an array of all printers in Cornell's net-print
+                        website, with the following information:
+                        - color
+                        - dpi
+                        - duplex
+                        - price_per_page
+                        - printer_model
+                        - printer_name
+                        - queue_name
+
+
+                        ACADEMIC CALENDAR
+        
+/academic_calendar/%y%  Returns freshly mined information from Cornell’s academic 
+                        calendar, for academic year starting at %y%
+                        (eg. /academic_calendar/2014 returns information for the
+                        2014-15 academic calendar).
+
+
+                        EXAM CALENDAR
+        
+/exam_calendar/%t%/%e%  Returns freshly mined information from Cornell’s exam 
+                        calendar site, for schoolyear term %t% and exam type %e%.
+                        Only the dates for the current school year are supported.
+  
+
+Changelog:
+
+v3.4.2
+- Fix academic calendar endpoint. Should be working again.
+- Fix exam calendar endpoint. Should be working again.
+- Exam calendar doesn't return undefined properties for prelims (location, time)
+
+v3.4.1
+- Change Bethe's dinning hall id from "jansens_dining_room,_bethe_house" to 
+  "jansens_dining_room_bethe_house". Fixes bug when listing it as part of a 
+  comma-separated list.
+
+v3.4.0
+- Add initial support for calendar events. Date ranges are supported.
+- Changes to /dining/:id
+  - rrule.weekdays is now an array of weekdays, instead of a string of comma-separated values
+  - Removed description from calendar entry objects
+  - Removed status from calendar entry objects
+
+v3.3.0
+- Add menus to dining endpoint! The following are supported:
+  + cook_house_dining_room
+  + becker_house_dining_room
+  + keeton_house_dining_room
+  + rose_house_dining_room
+  + jansens_dining_room,_bethe_house
+  + robert_purcell_marketplace_eatery
+  + north_star
+  + risley_dining
+  + 104west
+  + okenshields
+
+v3.2.1
+- Add geographic coordinates to the dining calendar location endpoint.
+
+v3.2.0
+- New exam calendar endpoint! Mined right from Cornell’s website.
+- Fixes to dining calendar.
+
+v3.1.1
+- Add summary field for dinning events again. Oops. That was my bad.
+
+v3.1.0
+- New academic calendar endpoint! Fetched directly from Cornell’s website.
+- Remove west_side_express from dining (doesn’t exist anymore). 
+- Remove some unnecessary information from dinning.
+
+v3.0.0
+- New printer endpoint! All net-print information is mined from Cornell on a
+  weekly basis.
+- Roster term subject objects no longer include url to API endpoint, for the
+  sake of deployment agnosticity. 
+- New paths to endpoints.
+- Under the hood: server code re-written from the ground up. Now running on 
+  express and written on coffee-script.
+
+v2.1.0
+- class_descriptions is now an html description of the class, straight from the
+  Cornell website
+- Added rid: the id for the class on the Cornell website.
+
+v2.0.2
+- Remove disk cache for dining calendars. Now they are served from memory.
+- Remove dinning bot. Cache is populated as requested and cleared daily.
+- Huge refactoring for dining calendars cause the code was old. Streamlining for request
+  code in general. 
+
+v2.0.1
+- Huge performance update to /roster:
+    - Now using a local cache. Cache’d queries should have a much lower waiting time.
+      The server should now take only about 4ms to process a query compared to up to 
+      the 3.9s it took before on long rosters like CS. That’s a 1000x increase! Note:
+      the cache is built on demand and cleared daily.
+
+v2.0.0 
+- Huge changes to /roster:
+    - Removed $ objects. All their contents are dumped into the parent object.
+    - Removed XML property from subject listing and replaced it with JSON property, 
+      with a URL to the JSON data from this API for that subject.
+    - Renamed properties, dumped objects and arrays and cleaned up all over. Should
+      be nice and easily usable now.
+      
+
+v1.1.0
+- Added experimental on-the-go roster XML translation to JSON from official Cornell XML sources.
+  Shout out to Feifan Zhou for pointing me to (http://registrar.sas.cornell.edu/courses/roster/SP11/faq)
+
+
+v1.0.1
+- Added this description page!
+
+v1.0
+- Initial release
