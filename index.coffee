@@ -9,10 +9,10 @@ router  = express.Router()
 config  = require('config-multipaas')()
 
 routes_calendar           = require './routes_calendar'
-routes_netprint           = require './routes_netprint'
-routes_roster             = require './routes_roster'
-routes_academic_calendar  = require './routes_academic_calendar'
-routes_exam_calendar      = require './routes_exam_calendar'
+# routes_netprint           = require './routes_netprint'
+# routes_roster             = require './routes_roster'
+# routes_academic_calendar  = require './routes_academic_calendar'
+# routes_exam_calendar      = require './routes_exam_calendar'
 
 #
 # Set up the routes

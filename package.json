@@ -26,15 +26,10 @@
     "npm": ">= 1.2.0"
   },
   "dependencies": {
-    "Sokka": "git://github.com/mrkev/Sokka.git",
-    "Sozin": "git://github.com/mrkev/Sozin.git",
-    "Tenzin": "git://github.com/mrkev/Tenzin.git",
     "coffee-script": "^1.8.0",
     "config-multipaas": "^0.1.0",
     "express": "^4.9.5",
     "iroh": "git+https://github.com/mrkev/iroh.git",
-    "katara": "git://github.com/mrkev/Katara.git",
-    "obender": "^0.1.1"
   },
   "devDependencies": {},
   "bundleDependencies": [],
