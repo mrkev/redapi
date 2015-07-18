@@ -29,7 +29,7 @@
     "coffee-script": "^1.8.0",
     "config-multipaas": "^0.1.0",
     "express": "^4.9.5",
-    "iroh": "git+https://github.com/mrkev/iroh.git",
+    "iroh": "git+https://github.com/mrkev/iroh.git"
   },
   "devDependencies": {},
   "bundleDependencies": [],
