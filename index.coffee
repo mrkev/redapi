@@ -26,19 +26,19 @@ router
     res.sendFile __dirname + '/info.txt'
     return
 
-## Roster@Katara
-#
-router
-  .route('/roster')
-  .get routes_roster.current_term
+# ## Roster@Katara
+# #
+# router
+#   .route('/roster')
+#   .get routes_roster.current_term
 
-router
-  .route('/roster/:term')
-  .get routes_roster.term
+# router
+#   .route('/roster/:term')
+#   .get routes_roster.term
 
-router
-  .route('/roster/:term/:subject')
-  .get routes_roster.subject
+# router
+#   .route('/roster/:term/:subject')
+#   .get routes_roster.subject
 
 ## Dining@Iroh
 
@@ -60,19 +60,19 @@ router
 
 ## Printing@Sokka
 
-router
-  .route('/print')
-  .get routes_netprint.all_printers
+# router
+#   .route('/print')
+#   .get routes_netprint.all_printers
 
-## Academic_Calendar@Tenzin
-router
-  .route('/academic_calendar/:ac_year')
-  .get routes_academic_calendar.cal_for_year
+# ## Academic_Calendar@Tenzin
+# router
+#   .route('/academic_calendar/:ac_year')
+#   .get routes_academic_calendar.cal_for_year
 
-## Exam_Calendar@Sozin
-router
-  .route('/exam_calendar/:term/:type')
-  .get routes_exam_calendar.cal_for_type_term
+# ## Exam_Calendar@Sozin
+# router
+#   .route('/exam_calendar/:term/:type')
+#   .get routes_exam_calendar.cal_for_type_term
 
 #
 # Start the server
