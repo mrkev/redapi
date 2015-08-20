@@ -2,13 +2,11 @@
 #                              RedAPI server                                   #
 #                                                                              #
 
-express = require('express')
+express = (require 'express')
 app     = express()
 router  = express.Router()
+config  = (require 'config-multipaas')()
 
-config  = require('config-multipaas')()
-
-routes_calendar           = require './routes_calendar'
 # routes_netprint           = require './routes_netprint'
 # routes_roster             = require './routes_roster'
 # routes_academic_calendar  = require './routes_academic_calendar'
@@ -27,6 +25,9 @@ router
     console.log process.version
     return
 
+(require './routes_food')(-> router)
+
+
 # ## Roster@Katara
 # #
 # router
@@ -40,24 +41,6 @@ router
 # router
 #   .route('/roster/:term/:subject')
 #   .get routes_roster.subject
-
-## Dining@Iroh
-
-router
-  .route('/dining')
-  .get routes_calendar.all_ids
-
-router
-  .route('/dining/:cal_id')
-  .get routes_calendar.cal_data
-
-router
-  .route('/dining/menu/:locations/:meals/:dim')
-  .get routes_calendar.menu
-
-router
-  .route('/dining/event/:locations/:dater/')
-  .get routes_calendar.event
 
 ## Printing@Sokka
 
@@ -81,6 +64,4 @@ router
 app
   .use('/', router)
   .listen config.get('PORT'), config.get('IP'), ->
-    console.log "Listening at #{config.get('IP')}:#{config.get('PORT')}"
-
-# console.log('Good stuff happens on port ' + config.port)
+    console.log "Good stuff happens on #{config.get('IP')}:#{config.get('PORT')}"
