@@ -2,11 +2,13 @@
 #                              RedAPI server                                   #
 #                                                                              #
 
+config  = require('config-multipaas')()
 express = require('express')
+cors    = require('cors')
 app     = express()
 router  = express.Router()
 
-config  = require('config-multipaas')()
+app.use(cors());
 
 routes_calendar           = require './routes_calendar'
 # routes_netprint           = require './routes_netprint'

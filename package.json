@@ -28,6 +28,7 @@
   "dependencies": {
     "coffee-script": "^1.8.0",
     "config-multipaas": "^0.1.0",
+    "cors": "^2.7.1",
     "express": "^4.9.5",
     "iroh": "git+https://github.com/mrkev/iroh.git"
   },
