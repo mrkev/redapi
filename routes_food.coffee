@@ -59,6 +59,20 @@ module.exports = (router_factory) ->
 
   router
     ##
+    # Serve array with ids for all available calendars
+    .route('/dining/location_info')
+    .get (req, res) ->
+      res.json iroh.ALL.map (x) ->
+        name : x.name
+        id : x.id
+        coordinates : x.coordinates
+        payment : if not (x.payment is "") then x.payment else null
+        description : x.description
+        description_location : x.what
+        description_menu : x.menu
+
+  router
+    ##
     # Serve menus
     # req: contains meal, location, dim coordinates for menu to fetch
     .route '/dining/menu/:locations/:meals/:dim'
