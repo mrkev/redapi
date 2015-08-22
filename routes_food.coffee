@@ -62,14 +62,15 @@ module.exports = (router_factory) ->
     # Serve array with ids for all available calendars
     .route('/dining/location_info')
     .get (req, res) ->
-      res.json iroh.ALL.map (x) ->
-        name : x.name
-        id : x.id
-        coordinates : x.coordinates
-        payment : if not (x.payment is "") then x.payment else null
-        description : x.description
-        description_location : x.what
-        description_menu : x.menu
+      res.json 
+        info : iroh.ALL.map (x) ->
+          name : x.name
+          id : x.id
+          coordinates : x.coordinates
+          payment : if not (x.payment is "") then x.payment else null
+          description : x.description
+          description_location : x.what
+          description_menu : x.menu
 
   router
     ##
