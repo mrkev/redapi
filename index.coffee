@@ -30,7 +30,7 @@ router
     return
 
 (require './routes_food')(-> router)
-
+(require './routes/open_status.coffee')(-> router)
 
 # ## Roster@Katara
 # #

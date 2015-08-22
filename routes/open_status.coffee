@@ -1,6 +1,8 @@
+
 fs   = require 'fs'
 rp   = require 'request-promise'
-cals = require './data/calendars.json'
+iroh = require 'iroh'
+{caldb} = require 'iroh'
 
 require 'datejs'
 Promise = require('es6-promise').Promise
@@ -10,46 +12,6 @@ FRONT_URL = 'https://www.googleapis.com/calendar/v3/calendars/'
 END_URL = '/events?singleEvents=true&orderBy=startTime' +
           '&maxResults=10&fields=items(summary%2Cstart%2Cend)%2Csummary' +
           "&timeMin=#{Date.today().toISOString()}"
-
-###
-post:
-  Promise resolving to object:
-  {
-    'dining_halls' : list of getLocDetails(diningHall) for each dining hall
-    'cafes'        : list of getLocDetails(cafes) for each cafes
-  }
-  Done for every calendar
-  Each list will be sorted by name
-###
-getResult = () ->
-  return new Promise (resolve, reject) ->
-    fs.readFile './api_key', (err,API_KEY) ->
-      return console.log(err) if err
-      END_URL += "&key=#{API_KEY}"
-
-      Promise.all(getLocDetails id, loc for own id, loc of cals).then((result) ->
-
-        # sort the lists in result by name
-        result.sort (a,b) -> return a.name < b.name ? -1 : 1
-
-        # partition into diningHalls vs Cafes
-        diningHalls = []
-        cafes = []
-        partition = (x) ->
-          if x.is_dining_hall then diningHalls.push x else cafes.push x
-        partition x for x in result
-
-        # resolve the parent new Promise object
-        resolve {
-          'dining_halls' : diningHalls,
-          'cafes'        : cafes,
-        }
-      )
-
-# INIT
-getResult().then((result) ->
-  console.log result
-)
 
 # pre: d is Date object
 # post: (h|hh):mm (am|pm)
@@ -79,7 +41,7 @@ getLocDetails = (id, loc) ->
   name = loc.name
 
   url = FRONT_URL + calId + END_URL
-  return new Promise (resolve, reject) ->
+  new Promise (resolve, reject) ->
     rp(url).then((response) ->
       response = JSON.parse response
 
@@ -130,20 +92,51 @@ getLocDetails = (id, loc) ->
       }
     )
 
+###
+post:
+  Promise resolving to object:
+  {
+    'dining_halls' : list of getLocDetails(diningHall) for each dining hall
+    'cafes'        : list of getLocDetails(cafes) for each cafes
+  }
+  Done for every calendar
+  Each list will be sorted by name
+###
+getResult = -> new Promise (resolve, reject) ->
+
+  API_KEY = fs.readFileSync './priv/api_key'
+  END_URL += "&key=#{API_KEY}"
+
+  Promise
+  .all(getLocDetails id, loc for own id, loc of caldb)
+  .catch (e) -> console.log 'Error getting details', e
+  .then (result) ->
+
+    # sort the lists in result by name
+    result.sort (a,b) -> return a.name < b.name ? -1 : 1
+
+    # partition into diningHalls vs Cafes
+    diningHalls = []
+    cafes = []
+    
+    partition = (x) ->
+      if x.is_dining_hall then diningHalls.push x else cafes.push x
+    partition x for x in result
+
+    resolve {
+      'dining_halls' : diningHalls,
+      'cafes'        : cafes,
+    }
+  .catch (e) -> console.log 'Error collecting results', e
 
 
 module.exports = (where_my_router_at) ->
-
   router = where_my_router_at()
-  iroh = require 'iroh'
-
   router
-    .route '/dining/status/:location'
-    .get (req, res) ->
-      res.json getLocDetails req.params.location, iroh.cal_db[req.params.location]
-      return
-
-
+    .route '/dining/location_status/'
+    .get (req, res) -> getResult().then((result) ->
+      res.json result
+    )
 
 
 

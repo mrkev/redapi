@@ -54,8 +54,8 @@ module.exports = (router_factory) ->
     # Serve array with ids for all available calendars
     .route('/dining')
     .get (req, res) -> res.json
-      hall : iroh.ALL_HALLS
-      brb  : iroh.ALL_BRBS
+      halls : iroh.ALL_HALLS
+      cafes : iroh.ALL_BRBS
 
   router
     ##
