@@ -1,17 +1,16 @@
-
-fs   = require 'fs'
-rp   = require 'request-promise'
-iroh = require 'iroh'
-{caldb} = require 'iroh'
+fs      = require 'fs'
+rp      = require 'request-promise'
+iroh    = require 'iroh'
 
 require 'datejs'
 Promise = require('es6-promise').Promise
 
 # https://developers.google.com/apis-explorer/#s/calendar/v3/calendar.events.list
-FRONT_URL = 'https://www.googleapis.com/calendar/v3/calendars/'
-END_URL = '/events?singleEvents=true&orderBy=startTime' +
-          '&maxResults=10&fields=items(summary%2Cstart%2Cend)%2Csummary' +
-          "&timeMin=#{Date.today().toISOString()}"
+FRONT_URL = "https://www.googleapis.com/calendar/v3/calendars/"
+END_URL = "/events?singleEvents=true&orderBy=startTime" +
+          "&maxResults=10&fields=items(summary%2Cstart%2Cend)%2Csummary" +
+          "&timeMin=#{Date.today().toISOString()}" + 
+          "&key=#{fs.readFileSync './priv/api_key'}"
 
 # pre: d is Date object
 # post: (h|hh):mm (am|pm)
@@ -51,44 +50,45 @@ getLocDetails = (id, loc) ->
       now = new Date()
 
       # vars to-be-set by getOpenStatus below
-      changeTime = 0
-      isOpen = false
-      isAlmostOpen = false
+      change_time = 0
+      is_open = false
+      is_almost_open = false
       prevEnd = null
 
       # pre: e is Google Calendar event
-      # post: sets changeTime, isOpen, isAlmostOpen
+      # post: sets change_time, is_open, is_almost_open
       getOpenStatus = (e) ->
         # event summary contains closed -> not an open event
         if e.summary.search(/closed/i) < 0
           start = Date.parse(e.start.dateTime)
-          # if changeTime not set yet, or this event continues the previous event
-          if !changeTime or !prevEnd or start.equals(prevEnd)
+          # if change_time not set yet, or this event continues the previous event
+          if !change_time or !prevEnd or start.equals(prevEnd)
             end = Date.parse(e.end.dateTime)
             prevEnd = end
             if now >= start && now < end
               # we are in this event, so set it to be open until the end
-              isOpen = true
-              changeTime = end.getTime()
+              is_open = true
+              change_time = end.getTime()
             else if now < start
               # we are before this event, so set it as closed until the start
               dayDiff = start.getDay() - now.getDay()
               hoursDiff = start.getHours() - now.getHours()
               if dayDiff is 0 && hoursDiff <= 2
-                isAlmostOpen = true
-              changeTime = start.getTime()
+                is_almost_open = true
+              change_time = start.getTime()
 
       # run getOpenStatus over the events
       getOpenStatus event for event in events
 
+      status = if is_open then "open" else (if is_almost_open then 'almost_open' else 'closed')
+
       # resolve the parent new Promise object
       resolve {
-        "id"             : id,
-        "name"           : name,
-        "change_time"    : changeTime / 1000, # ms -> seconds
-        "is_open"        : isOpen,
-        "is_almost_open" : isAlmostOpen,
-        "is_dining_hall" : loc.is_dining_hall
+        id
+        name
+        change_time
+        status
+        is_dining_hall : loc.is_dining_hall
       }
     )
 
@@ -102,40 +102,20 @@ post:
   Done for every calendar
   Each list will be sorted by name
 ###
-getResult = -> new Promise (resolve, reject) ->
-
-  API_KEY = fs.readFileSync './priv/api_key'
-  END_URL += "&key=#{API_KEY}"
+getResult = ->
 
   Promise
-  .all(getLocDetails id, loc for own id, loc of caldb)
+  .all(getLocDetails id, loc for own id, loc of iroh.caldb)
   .catch (e) -> console.log 'Error getting details', e
-  .then (result) ->
-
-    # sort the lists in result by name
-    result.sort (a,b) -> return a.name < b.name ? -1 : 1
-
-    # partition into diningHalls vs Cafes
-    diningHalls = []
-    cafes = []
-    
-    partition = (x) ->
-      if x.is_dining_hall then diningHalls.push x else cafes.push x
-    partition x for x in result
-
-    resolve {
-      'dining_halls' : diningHalls,
-      'cafes'        : cafes,
-    }
-  .catch (e) -> console.log 'Error collecting results', e
-
 
 module.exports = (where_my_router_at) ->
   router = where_my_router_at()
+  
   router
     .route '/dining/location_status/'
     .get (req, res) -> getResult().then((result) ->
-      res.json result
+      res.json 
+        locations : result
     )
 
 
