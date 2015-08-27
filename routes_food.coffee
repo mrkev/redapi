@@ -63,7 +63,7 @@ module.exports = (router_factory) ->
     .route('/dining/location_info')
     .get (req, res) ->
       res.json 
-        info : iroh.ALL.map (x) ->
+        locations : iroh.ALL.map (x) ->
           name : x.name
           id : x.id
           coordinates : x.coordinates
