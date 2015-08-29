@@ -36,61 +36,56 @@ post:
   }
 ###
 getLocDetails = (id, loc) ->
-  calId = loc.cal_id
-  name = loc.name
+  rp(FRONT_URL + loc.cal_id + END_URL).then (response) ->
 
-  url = FRONT_URL + calId + END_URL
-  new Promise (resolve, reject) ->
-    rp(url).then((response) ->
-      response = JSON.parse response
+    # list of events
+    events = (JSON.parse response).items
 
-      # list of events
-      events = response.items
+    now = new Date()
 
-      now = new Date()
+    # vars to-be-set by getOpenStatus below
+    change_time = 0
+    is_open = false
+    is_almost_open = false
+    prevEnd = null
 
-      # vars to-be-set by getOpenStatus below
-      change_time = 0
-      is_open = false
-      is_almost_open = false
-      prevEnd = null
+    # pre: e is Google Calendar event
+    # post: sets change_time, is_open, is_almost_open
+    getOpenStatus = (e) ->
+      # event summary contains closed -> not an open event
+      if e.summary.search(/closed/i) < 0
+        start = Date.parse(e.start.dateTime)
+        # if change_time not set yet, or this event continues the previous event
+        if !change_time or !prevEnd or start.equals(prevEnd)
+          end = Date.parse(e.end.dateTime)
+          prevEnd = end
+          if now >= start && now < end
+            # we are in this event, so set it to be open until the end
+            is_open = true
+            change_time = end.getTime()
+          else if now < start
+            # we are before this event, so set it as closed until the start
+            dayDiff = start.getDay() - now.getDay()
+            hoursDiff = start.getHours() - now.getHours()
+            if dayDiff is 0 && hoursDiff <= 2
+              is_almost_open = true
+            change_time = start.getTime()
 
-      # pre: e is Google Calendar event
-      # post: sets change_time, is_open, is_almost_open
-      getOpenStatus = (e) ->
-        # event summary contains closed -> not an open event
-        if e.summary.search(/closed/i) < 0
-          start = Date.parse(e.start.dateTime)
-          # if change_time not set yet, or this event continues the previous event
-          if !change_time or !prevEnd or start.equals(prevEnd)
-            end = Date.parse(e.end.dateTime)
-            prevEnd = end
-            if now >= start && now < end
-              # we are in this event, so set it to be open until the end
-              is_open = true
-              change_time = end.getTime()
-            else if now < start
-              # we are before this event, so set it as closed until the start
-              dayDiff = start.getDay() - now.getDay()
-              hoursDiff = start.getHours() - now.getHours()
-              if dayDiff is 0 && hoursDiff <= 2
-                is_almost_open = true
-              change_time = start.getTime()
+    # run getOpenStatus over the events
+    getOpenStatus event for event in events
 
-      # run getOpenStatus over the events
-      getOpenStatus event for event in events
+    status = if is_open then "open" else (if is_almost_open then 'almost_open' else 'closed')
 
-      status = if is_open then "open" else (if is_almost_open then 'almost_open' else 'closed')
-
-      # resolve the parent new Promise object
-      resolve {
+    # resolve the parent new Promise object
+    return {
+      change_time
+      status
+      location : {
         id
-        name
-        change_time
-        status
-        is_dining_hall : loc.is_dining_hall
+        name : loc.name
+        type : if loc.is_dining_hall then "hall" else "cafe"
       }
-    )
+    }
 
 ###
 post:
