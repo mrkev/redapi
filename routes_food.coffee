@@ -71,6 +71,7 @@ module.exports = (router_factory) ->
           description : x.description
           description_location : x.what
           description_menu : x.menu
+          # type
 
   router
     ##
