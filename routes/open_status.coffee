@@ -40,7 +40,6 @@ getLocDetails = (id, loc) ->
 
     # list of events
     events = (JSON.parse response).items
-
     now = new Date()
 
     # vars to-be-set by getOpenStatus below
@@ -50,41 +49,53 @@ getLocDetails = (id, loc) ->
     prevEnd = null
 
     # pre: e is Google Calendar event
+    # eg.
+    #   { summary: 'Lunch until 2pm',
+    #  start:
+    #   { dateTime: '2015-08-31T11:00:00-04:00',
+    #     timeZone: 'America/New_York' },
+    #  end:
+    #   { dateTime: '2015-08-31T14:00:00-04:00',
+    #  timeZone: 'America/New_York' } }
+    # 
     # post: sets change_time, is_open, is_almost_open
     getOpenStatus = (e) ->
       # event summary contains closed -> not an open event
-      if e.summary.search(/closed/i) < 0
-        start = Date.parse(e.start.dateTime)
-        # if change_time not set yet, or this event continues the previous event
-        if !change_time or !prevEnd or start.equals(prevEnd)
-          end = Date.parse(e.end.dateTime)
-          prevEnd = end
-          if now >= start && now < end
-            # we are in this event, so set it to be open until the end
-            is_open = true
-            change_time = end.getTime()
-          else if now < start
-            # we are before this event, so set it as closed until the start
-            dayDiff = start.getDay() - now.getDay()
-            hoursDiff = start.getHours() - now.getHours()
-            if dayDiff is 0 && hoursDiff <= 2
-              is_almost_open = true
-            change_time = start.getTime()
+      return if e.summary.search(/closed/i) > -1
+
+      start = Date.parse(e.start.dateTime)
+      # if change_time not set yet, or this event continues the previous event continue
+      return if !(!change_time or !prevEnd or start.equals(prevEnd))
+
+      end = Date.parse(e.end.dateTime)
+      prevEnd = end
+      if now >= start && now < end 
+        # we are in this event, so set it to be open until the end
+        is_open = true
+        change_time = end.getTime()
+      else if now < start
+        # we are before this event, so set it as closed until the start
+        dayDiff = start.getDay() - now.getDay()
+        hoursDiff = start.getHours() - now.getHours()
+        
+        is_almost_open = true if dayDiff is 0 && hoursDiff <= 2
+        change_time = start.getTime()
 
     # run getOpenStatus over the events
-    getOpenStatus event for event in events
+    (getOpenStatus event) for event in events
 
     status = if is_open then "open" else (if is_almost_open then 'almost_open' else 'closed')
 
     # resolve the parent new Promise object
     return {
-      change_time
+      event_changes : [{
+        time : change_time
+        type : if status is 'closed' then 'open' else 'closed'
+      }]
       status
-      location : {
-        id
-        name : loc.name
-        type : if loc.is_dining_hall then "hall" else "cafe"
-      }
+      id
+      name : loc.name
+      type : if loc.is_dining_hall then "hall" else "cafe"
     }
 
 ###
@@ -98,14 +109,12 @@ post:
   Each list will be sorted by name
 ###
 getResult = ->
-
   Promise
   .all(getLocDetails id, loc for own id, loc of iroh.caldb)
   .catch (e) -> console.log 'Error getting details', e
 
 module.exports = (where_my_router_at) ->
   router = where_my_router_at()
-  
   router
     .route '/dining/location_status/'
     .get (req, res) -> getResult().then((result) ->
