@@ -54,8 +54,12 @@ module.exports = (router_factory) ->
     # Serve array with ids for all available calendars
     .route('/dining')
     .get (req, res) -> res.json
-      halls : iroh.ALL_HALLS
-      cafes : iroh.ALL_BRBS
+      halls : iroh.ALL_HALLS.map (x) ->
+        x.type = 'hall'
+        return x
+      cafes : iroh.ALL_BRBS.map (x) ->
+        x.type = 'cafe'
+        return x
 
   router
     ##
@@ -73,21 +77,30 @@ module.exports = (router_factory) ->
           description_menu : x.menu
           # type
 
+
   router
     ##
     # Serve menus
     # req: contains meal, location, dim coordinates for menu to fetch
     .route '/dining/menu/:locations/:meals/:dim'
     .get (req, res) ->  
-      location = normalize_list req.params.locations, iroh.ALL_LOCATIONS    
-      meal     = normalize_list req.params.meals, iroh.ALL_MEALS
+      console.log 'ay'
+      locations = normalize_list req.params.locations, iroh.ALL_LOCATIONS    
+      console.log 'locations', locations
+      meals     = normalize_list req.params.meals, iroh.ALL_MEALS
+      console.log 'meals', meals
       dim      = normalize_keyword req.params.dim, ['LOCATIONS', 'MEALS']
+      console.log 'dim', dim
+      console.log "YO MENU w/ #{locations}, #{meals}, #{dim}"
 
-      console.log "YO MENU w/ #{location}, #{meal}, #{dim}"
-
-      iroh.get_menus location, meal
-      .then (data) -> res.json (dimentionalize data, dim)
-      .catch res.json
+      try
+        iroh.get_menus locations, meals
+        .then (data) -> 
+          res.json (dimentionalize data, dim)
+        .catch res.json
+      catch e
+        throw e
+        console.log 'classic'
 
   router
     ##

@@ -1,8 +1,6 @@
 fs      = require 'fs'
 rp      = require 'request-promise'
 iroh    = require 'iroh'
-
-require 'datejs'
 Promise = require('es6-promise').Promise
 
 # https://developers.google.com/apis-explorer/#s/calendar/v3/calendar.events.list
