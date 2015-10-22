@@ -1,6 +1,5 @@
 fs      = require 'fs'
 rp      = require 'request-promise'
-iroh    = require 'iroh'
 cueats  = require 'cornell-dining'
 Promise = require('es6-promise').Promise
 
@@ -62,7 +61,7 @@ getLocDetails = (id, loc) ->
       # event summary contains closed -> not an open event
       return if e.summary.search(/closed/i) > -1
 
-      start = Date.parse(e.start.dateTime)
+      start = Date.parse e.start.dateTime
       # if change_time not set yet, or this event continues the previous event continue
       return if !(!change_time or !prevEnd or start.equals(prevEnd))
 
@@ -116,10 +115,9 @@ module.exports = (where_my_router_at) ->
   router = where_my_router_at()
   router
     .route '/dining/location_status/'
-    .get (req, res) -> getResult().then((result) ->
+    .get (req, res) -> getResult().then (result) ->
       res.json 
         locations : result
-    )
 
 
 

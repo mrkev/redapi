@@ -45,7 +45,6 @@ normalize_keyword = (word, list) ->
 ################################ The Real Deal. ################################
 
 module.exports = (router_factory) ->
-  iroh   = require 'iroh'
   cueats = require 'cornell-dining'
   router = router_factory()
 

@@ -1,19 +1,19 @@
-RedAPI v4.0.0
+RedAPI v4.1.0
 
 
 Usage:
 
-PATH                    DESCRIPTION
+PATH                      DESCRIPTION
+  
+/                         Returns this page (plain text format).
+  
+  
+                          DINNING CALENDAR
+  
+/dining                   Returns array of id’s for all dining options with
+                          information in this API.
 
-/                       Returns this page (plain text format).
-
-
-                        DINNING CALENDAR
-
-/dining                 Returns array of id’s for all dining options with
-                        information in this API.
-
-/dining/:id             Returns calendar object for dinning hall with id :id.
+/dining/location_status/  Status about the locations
 
 /dining/menu/:locations/:meals/:sort
 
@@ -47,6 +47,9 @@ PATH                    DESCRIPTION
 
 
 Changelog:
+
+v4.1.0
+  Add /dining/location_status/
 
 v4.0.0
   DEPRECATE A LOT OF THINGS.
