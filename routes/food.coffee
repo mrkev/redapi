@@ -22,29 +22,10 @@ dimentionalize = (array, key_dim) -> switch key_dim
   else
     throw new Error 'Invalid dimention'
 
-##
-# Returns an array from the comma-separated values 
-# of a given [@param string]. If the string is ALL,
-# and an [@param all] is given, it returns that 
-# instead.
-normalize_list = (string, all) ->
-  all = ['ALL'] if not all
-  switch string
-    when 'ALL' then all
-    when undefined, null, '' then []
-    else string.split ','
-
-##
-# Coerces a word into one from a list. If word is
-# not found. First word in the list is returned.
-normalize_keyword = (word, list) ->
-  i = list.indexOf word #.toUppercase
-  list[(if i > -1 then i else 0)]
-
-
 ################################ The Real Deal. ################################
 
 module.exports = (router_factory) ->
+  util   = require '../lib/common.coffee'
   cueats = require 'cornell-dining'
   router = router_factory()
 
@@ -81,7 +62,7 @@ module.exports = (router_factory) ->
   router
     .route '/dining/menu/:locations'
     .get (req, res) ->  
-      locations = normalize_list req.params.locations, cueats.ALL_LOCATIONS    
+      locations = util.normalize_list req.params.locations, cueats.ALL_LOCATIONS    
 
       try
         cueats.get_menus locations, cueats.ALL_MEALS
@@ -95,8 +76,8 @@ module.exports = (router_factory) ->
   router
     .route '/dining/menu/:locations/:meals'
     .get (req, res) ->  
-      locations = normalize_list req.params.locations, cueats.ALL_LOCATIONS    
-      meals     = normalize_list req.params.meals, cueats.ALL_MEALS
+      locations = util.normalize_list req.params.locations, cueats.ALL_LOCATIONS    
+      meals     = util.normalize_list req.params.meals, cueats.ALL_MEALS
 
       try
         cueats.get_menus locations, meals
@@ -114,9 +95,9 @@ module.exports = (router_factory) ->
     # req: contains meal, location, dim coordinates for menu to fetch
     .route '/dining/menu/:locations/:meals/:dim'
     .get (req, res) ->  
-      locations = normalize_list req.params.locations, cueats.ALL_LOCATIONS    
-      meals     = normalize_list req.params.meals, cueats.ALL_MEALS
-      dim       = normalize_keyword req.params.dim, ['LOCATIONS', 'MEALS']
+      locations = util.normalize_list req.params.locations, cueats.ALL_LOCATIONS    
+      meals     = util.normalize_list req.params.meals, cueats.ALL_MEALS
+      dim       = util.normalize_keyword req.params.dim, ['LOCATIONS', 'MEALS']
 
       try
         cueats.get_menus locations, meals
@@ -125,27 +106,3 @@ module.exports = (router_factory) ->
         .catch res.json
       catch e
         throw e
-
-  router
-    ##
-    # req: contains date range, location of calendar events to fetch
-    .route '/dining/event/:locations/:dater/'
-    .get (req, res) ->
-      location = normalize_list req.params.locations, cueats.ALL_LOCATIONS
-      dater = switch req.params.dater
-        when undefined, null, '' then []
-        else cueats.DATE_RANGE.apply(cueats, req.params.dater.split('-'))
-
-      (cueats.get_events location, dater).then (arr) ->
-        console.log arr
-
-        acc = {}
-        for e in arr
-          acc[e.location] = [] if not acc[e.location]
-          acc[e.location].push(e)
-
-        res.json(acc)
-
-      .catch res.json
-
-        

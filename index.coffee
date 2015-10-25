@@ -16,6 +16,7 @@ app.use(cors());
 #
 
 (require './routes/food')        (-> router)
+(require './routes/events')      (-> router)
 (require './routes/open_status') (-> router)
 
 router

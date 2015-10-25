@@ -34,7 +34,8 @@ post:
   }
 ###
 getLocDetails = (id, loc) ->
-  rp(FRONT_URL + loc.cal_id + END_URL).then (response) ->
+  rp(FRONT_URL + loc.cal_id + END_URL)
+  .then (response) ->
 
     # list of events
     events = (JSON.parse response).items
@@ -108,7 +109,7 @@ post:
 ###
 getResult = ->
   Promise
-  .all(getLocDetails id, loc for own id, loc of iroh.caldb)
+  .all(getLocDetails id, loc for own id, loc of cueats.caldb)
   .catch (e) -> console.log 'Error getting details', e
 
 module.exports = (where_my_router_at) ->
