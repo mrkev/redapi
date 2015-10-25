@@ -8,45 +8,71 @@ PATH                      DESCRIPTION
 /                         Returns this page (plain text format).
   
   
-                          DINNING CALENDAR
+/////////////////////////////////// DINNING ///////////////////////////////////
   
-/dining                   Returns array of id’s for all dining options with
-                          information in this API.
+GENERAL   /dining                   
+              
+              Returns array of id’s for all dining 
+              options with information in this API.
+          
+          /dining/location_status/
+          
+              Status information for all the locations.
+          
+MENUS     /dining/menu/:locations
+          /dining/menu/:locations/:meals
+          /dining/menu/:locations/:meals/:sort
+          
+            :locations - Comma separated dinning hall ids. 
+                Note: not all halls have menus.
+            
+            :meals - Comma separated. One or more of: 
+                Breakfast 
+                Lunch 
+                Brunch
+                Dinner
+                General
+          
+            :sort - One of
+              MEALS      : returns object with 
+                           meal keys, dinning hall values
+              LOCATIONS  : returns object with 
+                           location keys, meal values
+          
+            Sample Queries:
+            eg. /dining/menu/okenshields,north_star/Breakfast/MEALS
+            eg. /dining/menu/risley/Breakfast
+            eg. /dining/menu/bear_necesities
+        
+        
+EVENTS    /dining/event/:locations/:date_range
 
-/dining/location_status/  Status about the locations
+          :locations - Comma separated dinning hall ids.
+          
+          :date_range - A range in format 
 
-/dining/menu/:locations/:meals/:sort
+              'start'-'end'
 
-                        :locations - comma separated dinning hall ids. Note: not
-                            all halls have menus.
-                        :meals - one or more of 'Breakfast', 'Lunch', 'Brunch' or
-                            'Dinner'. comma separated values.
-                        :sort - one of
-                          'MEALS' : returns object with meal keys, dinning hall values
-                          'LOCATIONS' : returns object with location keys, meal values
+            All events from 'start' up to but not 
+            including end will be returned.
 
-                        Sample Query:
-                        eg. /dining/menu/okenshields,north_star/Breakfast/MEALS
+            Date range supports any format supported 
+            by the datejs library. Eg.
 
+              - today-tomorrow
+              - April 6, 2015-April 8, 2015
+                NOTE: Needs to be escaped to:
+                  April%206,%202015-April%208,%202015
 
-/dining/event/:locations/:date_range
-
-                        :locations - comma separated dinning hall ids.
-                        :date_range - A range in format start-end. All events from
-                            start up to but not including end will be returned.
-
-                            Date range supports any format supported by the datejs
-                            library. Eg.
-
-                            - today-tomorrow
-                            - April 6, 2015-April 8, 2015
-                              NOTE: Needs to be escaped to April%206,%202015-April%208,%202015
-
-                        Sample Query:
-                        eg./dining/event/okenshields,north_star/April%206,%202015-April%208,%202015
+          Sample Query:
+          eg. /dining/event/okenshields,north_star/April%206,%202015-April%208,%202015
 
 
 Changelog:
+
+v4.2.0
+  Add /dining/menu/:locations
+      /dining/menu/:locations/:meals
 
 v4.1.0
   Add /dining/location_status/

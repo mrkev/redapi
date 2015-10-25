@@ -78,9 +78,38 @@ module.exports = (router_factory) ->
           description_menu : x.menu
           # type
 
+  router
+    .route '/dining/menu/:locations'
+    .get (req, res) ->  
+      locations = normalize_list req.params.locations, cueats.ALL_LOCATIONS    
+
+      try
+        cueats.get_menus locations, cueats.ALL_MEALS
+        .then (data) ->
+          res.json
+            menus : data.filter (x) -> x.menu
+        .catch res.json
+      catch e
+        throw e
+
+  router
+    .route '/dining/menu/:locations/:meals'
+    .get (req, res) ->  
+      locations = normalize_list req.params.locations, cueats.ALL_LOCATIONS    
+      meals     = normalize_list req.params.meals, cueats.ALL_MEALS
+
+      try
+        cueats.get_menus locations, meals
+        .then (data) ->
+          res.json
+            menus : data.filter (x) -> x.menu
+        .catch res.json
+      catch e
+        throw e
 
   router
     ##
+    # FROZEN
     # Serve menus
     # req: contains meal, location, dim coordinates for menu to fetch
     .route '/dining/menu/:locations/:meals/:dim'
