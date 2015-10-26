@@ -43,59 +43,120 @@ getLocDetails = (id, loc) ->
 
     # vars to-be-set by getOpenStatus below
     change_time = 0
-    is_open = false
-    is_almost_open = false
-    prevEnd = null
 
-    # pre: e is Google Calendar event
-    # eg.
-    #   { summary: 'Lunch until 2pm',
-    #  start:
-    #   { dateTime: '2015-08-31T11:00:00-04:00',
-    #     timeZone: 'America/New_York' },
-    #  end:
-    #   { dateTime: '2015-08-31T14:00:00-04:00',
-    #  timeZone: 'America/New_York' } }
-    # 
-    # post: sets change_time, is_open, is_almost_open
-    getOpenStatus = (e) ->
-      # event summary contains closed -> not an open event
-      return if e.summary.search(/closed/i) > -1
-
-      start = Date.parse e.start.dateTime
-      # if change_time not set yet, or this event continues the previous event continue
-      return if !(!change_time or !prevEnd or start.equals(prevEnd))
-
-      end = Date.parse(e.end.dateTime)
-      prevEnd = end
-      if now >= start && now < end 
-        # we are in this event, so set it to be open until the end
-        is_open = true
-        change_time = end.getTime()
-      else if now < start
-        # we are before this event, so set it as closed until the start
-        dayDiff = start.getDay() - now.getDay()
-        hoursDiff = start.getHours() - now.getHours()
-        
-        is_almost_open = true if dayDiff is 0 && hoursDiff <= 2
-        change_time = start.getTime()
-
-    # run getOpenStatus over the events
-    (getOpenStatus event) for event in events
-
-    status = if is_open then "open" else (if is_almost_open then 'almost_open' else 'closed')
-
-    # resolve the parent new Promise object
     return {
-      event_changes : [{
-        time : change_time
-        type : if status is 'closed' then 'open' else 'closed'
-      }]
+      event_changes : []
+      status : 'closed'
+      id
+      name : loc.name
+      type : if loc.is_dining_hall then "hall" else "cafe"
+    } if not events[0] # If array is empty it
+    # means the location is either permanently
+    # closed or no one has bothered updating
+    # the calendars.
+
+    # All-day events have dates, not dateTimes
+    next_start = Date.parse (events[0].start.dateTime or events[0].start.date)
+    next_end   = Date.parse (events[0].end.dateTime   or events[0].end.date  )
+
+    dayDiff   = next_start.getDay()   - now.getDay()
+    hoursDiff = next_start.getHours() - now.getHours()
+    
+    # Assuming events come in chronological order, 
+    # which it seems like they always should.
+    
+    # Note that now < next_end should always be true.
+    # if it weren't the case we wouldn't be getting
+    # this event from our API call to Google.
+    is_open = now >= next_start && now < next_end
+
+    status = switch true
+      when now >= next_start && now < next_end
+        "open"
+      when dayDiff is 0 && hoursDiff <= 2
+        "almost_open"
+      else
+        "closed"
+
+    event_changes = events[...3].reduce (acc, e) ->
+
+      console.log e.summary, (e.summary.search /closed/i) > -1
+      return acc if (e.summary.search /closed/i) > -1
+
+      start = Date.parse(e.start.dateTime or e.start.date)
+      end   = Date.parse(e.end.dateTime   or e.end.date)
+
+      console.log start, end, id if not start or not end
+      
+      acc.push {
+        time : start
+        type : 'open'
+      }
+
+      acc.push {
+        time : end
+        type : 'closed'
+      }
+
+      return acc
+
+    , []
+
+    console.log event_changes.length
+
+    # console.log event_changes, id
+
+    # Only the first change-time has the chance of 
+    # being less than now. If the first two were
+    # the event wouldn't be in our API call to Google
+    event_changes.shift() if event_changes[0].time < now
+
+    return {
+      event_changes
       status
       id
       name : loc.name
       type : if loc.is_dining_hall then "hall" else "cafe"
     }
+
+    # # pre: e is Google Calendar event
+    # # eg.
+    # #   { summary: 'Lunch until 2pm',
+    # #     start:
+    # #     { dateTime: '2015-08-31T11:00:00-04:00',
+    # #       timeZone: 'America/New_York' },
+    # #     end:
+    # #     { dateTime: '2015-08-31T14:00:00-04:00',
+    # #       timeZone: 'America/New_York' } }
+    # # 
+    # # post: sets change_time, is_open, is_almost_open
+    # getOpenStatus = (e) ->
+    #   # event summary contains closed -> not an open event
+    #   return if e.summary.search /closed/i > -1
+
+    #   start = Date.parse e.start.dateTime
+    #   # if change_time not set yet, or this event continues the previous event continue
+    #   return if !(!change_time or !prevEnd or start.equals(prevEnd))
+
+    #   end = Date.parse(e.end.dateTime)
+    #   prevEnd = end
+    #   if now >= start && now < end 
+    #     # we are in this event, so set it to be open until the end
+    #     change_time = end.getTime()
+    #   else if now < start
+    #     # we are before this event, so set it as closed until the start
+    #     change_time = start.getTime()
+
+    # # run getOpenStatus over the events
+    # # (getOpenStatus event) for event in events
+
+    # return {
+    #   event_changes
+    #   status
+    #   id
+    #   name : loc.name
+    #   type : if loc.is_dining_hall then "hall" else "cafe"
+    # }
 
 ###
 post:
@@ -120,6 +181,18 @@ module.exports = (where_my_router_at) ->
       res.json 
         locations : result
 
-
+if require.main is module
+   
+  (getLocDetails '104west', 
+    icalendar: 'https://www.google.com/calendar/ical/vlpa2hk9677m9bcbh6n2dtpn7k%40group.calendar.google.com/public/basic.ics'
+    cal_id: 'vlpa2hk9677m9bcbh6n2dtpn7k@group.calendar.google.com'
+    name: '104West!'
+    is_dining_hall: true
+    coordinates: '42.4442660, -76.4875983'
+    payment: 'BRB,cash,swipe'
+    hall_menu_id: 9
+  ).then (res) ->
+    console.log '\n'
+    console.dir res
 
 
