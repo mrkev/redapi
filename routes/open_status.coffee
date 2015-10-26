@@ -14,6 +14,13 @@ END_URL = "/events?singleEvents=true&orderBy=startTime" +
 # post: (h|hh):mm (am|pm)
 getTime = (d) -> d.toString('H:mm tt').toLowerCase()
 
+is_west =
+  "becker_house_dining_room"        : true
+  "cook_house_dining_room"          : true
+  "jansens_dining_room_bethe_house" : true
+  "keeton_house_dining_room"        : true
+  "rose_house_dining_room"          : true
+
 ###
 pre:
   id  : the id of the location
@@ -71,6 +78,9 @@ getLocDetails = (id, loc) ->
     is_open = now >= next_start && now < next_end
 
     status = switch true
+      when now >= next_start && now < next_end && \
+           is_west[id] && now.getDay() is 3 && now.getHours() is 18 # House dinner, Wednesday at 18:00-18:59
+        "house dinner"
       when now >= next_start && now < next_end
         "open"
       when dayDiff is 0 && hoursDiff <= 2
@@ -80,14 +90,11 @@ getLocDetails = (id, loc) ->
 
     event_changes = events[...3].reduce (acc, e) ->
 
-      console.log e.summary, (e.summary.search /closed/i) > -1
       return acc if (e.summary.search /closed/i) > -1
 
       start = Date.parse(e.start.dateTime or e.start.date)
       end   = Date.parse(e.end.dateTime   or e.end.date)
 
-      console.log start, end, id if not start or not end
-      
       acc.push {
         time : start
         type : 'open'
@@ -101,8 +108,6 @@ getLocDetails = (id, loc) ->
       return acc
 
     , []
-
-    console.log event_changes.length
 
     # console.log event_changes, id
 
