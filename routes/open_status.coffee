@@ -81,10 +81,18 @@ getLocDetails = (id, loc) ->
       when now >= next_start && now < next_end && \
            is_west[id] && now.getDay() is 3 && now.getHours() is 18 # House dinner, Wednesday at 18:00-18:59
         "house dinner"
-      when now >= next_start && now < next_end
-        "open"
-      when dayDiff is 0 && hoursDiff <= 2
-        "almost_open"
+      when now >= next_start && now < next_end && \
+           next_start.getHours() >= 16
+        "dinner"
+      when now >= next_start && now < next_end && \
+           next_start.getHours() >= 14
+        "lunch"
+      when now >= next_start && now < next_end && \
+           next_start.getHours() >= 10
+        "brunch"
+      when now >= next_start && now < next_end && \
+           next_start.getHours() >= 7
+        "breakfast"
       else
         "closed"
 
