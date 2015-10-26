@@ -79,7 +79,7 @@ getLocDetails = (id, loc) ->
 
     status = switch true
       when now >= next_start && now < next_end && \
-           is_west[id] && now.getDay() is 3 && now.getHours() is 18 # House dinner, Wednesday at 18:00-18:59
+           is_west[id] && now.getDay() is 3 && now.getHours() is 18          # House dinner, Wednesday at 18:00-18:59
         "house dinner"
       when now >= next_start && now < next_end && \
            next_start.getHours() >= 16
@@ -96,21 +96,39 @@ getLocDetails = (id, loc) ->
       else
         "closed"
 
-    event_changes = events[...3].reduce (acc, e) ->
+    event_changes = events[...3].reduce (acc, e, i) ->
 
       return acc if (e.summary.search /closed/i) > -1
 
       start = Date.parse(e.start.dateTime or e.start.date)
       end   = Date.parse(e.end.dateTime   or e.end.date)
 
+      new_status = switch true
+        when is_west[id] && start.getDay() is 3 && start.getHours() is 18          # House dinner, Wednesday at 18:00-18:59
+          "house dinner"
+        when start.getHours() >= 16
+          "dinner"
+        when start.getHours() >= 14
+          "lunch"
+        when start.getHours() >= 10
+          "brunch"
+        when start.getHours() >= 7
+          "breakfast"
+        else
+          "closed"
+
       acc.push {
         time : start
-        type : 'open'
+        status : new_status
       }
+
+      # A status change; next event starts right when this one ends. We just
+      # want to display that events start, and skip this event's end
+      return acc if Date.parse(events[i+1]?.start.dateTime or events[i+1]?.start.date).valueOf() is end.valueOf()
 
       acc.push {
         time : end
-        type : 'closed'
+        status : 'close'
       }
 
       return acc
