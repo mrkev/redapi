@@ -3,13 +3,6 @@ rp      = require 'request-promise'
 cueats  = require 'cornell-dining'
 Promise = require('es6-promise').Promise
 
-# https://developers.google.com/apis-explorer/#s/calendar/v3/calendar.events.list
-FRONT_URL = "https://www.googleapis.com/calendar/v3/calendars/"
-END_URL = "/events?singleEvents=true&orderBy=startTime" +
-          "&maxResults=10&fields=items(summary%2Cstart%2Cend)%2Csummary" +
-          "&timeMin=#{Date.today().toISOString()}" + 
-          "&key=#{fs.readFileSync './priv/api_key'}"
-
 # pre: d is Date object
 # post: (h|hh):mm (am|pm)
 getTime = (d) -> d.toString('H:mm tt').toLowerCase()
@@ -41,6 +34,13 @@ post:
   }
 ###
 getLocDetails = (id, loc) ->
+  # https://developers.google.com/apis-explorer/#s/calendar/v3/calendar.events.list
+  FRONT_URL = "https://www.googleapis.com/calendar/v3/calendars/"
+  END_URL = "/events?singleEvents=true&orderBy=startTime" +
+            "&maxResults=10&fields=items(summary%2Cstart%2Cend)%2Csummary" +
+            "&timeMin=#{Date.today().toISOString()}" + 
+            "&key=#{fs.readFileSync './priv/api_key'}"
+
   rp(FRONT_URL + loc.cal_id + END_URL)
   .then (response) ->
 
