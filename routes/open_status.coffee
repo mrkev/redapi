@@ -39,7 +39,7 @@ getLocDetails = (id, loc) ->
   END_URL = "/events?singleEvents=true&orderBy=startTime" +
             "&maxResults=10&fields=items(summary%2Cstart%2Cend)%2Csummary" +
             "&timeMin=#{Date.today().toISOString()}" + 
-            "&key=#{fs.readFileSync './priv/api_key'}"
+            "&key=AIzaSyBnR3NSTeZw4TBak_kW6uAhe38ooEzVW8U"
 
   rp(FRONT_URL + loc.cal_id + END_URL)
   .then (response) ->
