@@ -15,7 +15,7 @@ module.exports = (router_factory) ->
         else cueats.DATE_RANGE.apply(cueats, req.params.dater.split('-'))
  
       (cueats.get_events location, dater).then (arr) ->
-        console.log arr
+        console.log "#{arr.length} events got"
  
         acc = {}
         for e in arr
@@ -24,4 +24,4 @@ module.exports = (router_factory) ->
  
         res.json(acc)
  
-      .catch res.json
+      .catch(res.json)
