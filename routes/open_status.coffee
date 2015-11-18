@@ -201,16 +201,19 @@ post:
 ###
 getResult = ->
   Promise
-  .all(getLocDetails id, loc for own id, loc of cueats.caldb)
-  .catch (e) -> console.log 'Error getting details', e
+  .all(getLocDetails id, loc for own id, loc of cueats.ALL)
+  .catch (e) -> throw new Error('Error getting details\n' + e)
 
 module.exports = (where_my_router_at) ->
   router = where_my_router_at()
   router
     .route '/dining/location_status/'
-    .get (req, res) -> getResult().then (result) ->
-      res.json 
-        locations : result
+    .get (req, res) -> 
+      getResult()
+      .then (result) ->
+        res.json 
+          locations : result
+      .catch res.json
 
 if require.main is module
    
