@@ -1,4 +1,4 @@
-RedAPI v4.2.0
+RedAPI v4.2.1
 
 
 Usage:
@@ -69,6 +69,9 @@ EVENTS    /dining/event/:locations/:date_range
 
 
 Changelog:
+
+v4.2.1
+- Fix bug causing timeout hangs when fetching marthas_cafe in /dining/event/:locations/:date_range
 
 v4.2.0
   Add /dining/menu/:locations
