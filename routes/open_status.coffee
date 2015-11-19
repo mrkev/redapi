@@ -33,7 +33,8 @@ post:
     is_dining_hall : if true, this location is a dining hall, else cafe
   }
 ###
-getLocDetails = (id, loc) ->
+getLocDetails = (loc) ->
+  # console.log loc.id
   # https://developers.google.com/apis-explorer/#s/calendar/v3/calendar.events.list
   FRONT_URL = "https://www.googleapis.com/calendar/v3/calendars/"
   END_URL = "/events?singleEvents=true&orderBy=startTime" +
@@ -54,7 +55,7 @@ getLocDetails = (id, loc) ->
     return {
       event_changes : []
       status : 'closed'
-      id
+      id : loc.id
       name : loc.name
       type : if loc.is_dining_hall then "hall" else "cafe"
     } if not events[0] # If array is empty it
@@ -79,7 +80,7 @@ getLocDetails = (id, loc) ->
 
     status = switch true
       when now >= next_start && now < next_end && \
-           is_west[id] && now.getDay() is 3 && now.getHours() is 18          # House dinner, Wednesday at 18:00-18:59
+           is_west[loc.id] && now.getDay() is 3 && now.getHours() is 18          # House dinner, Wednesday at 18:00-18:59
         "house dinner"
       when now >= next_start && now < next_end && \
            next_start.getHours() >= 16
@@ -104,7 +105,7 @@ getLocDetails = (id, loc) ->
       end   = Date.parse(e.end.dateTime   or e.end.date)
 
       new_status = switch true
-        when is_west[id] && start.getDay() is 3 && start.getHours() is 18          # House dinner, Wednesday at 18:00-18:59
+        when is_west[loc.id] && start.getDay() is 3 && start.getHours() is 18          # House dinner, Wednesday at 18:00-18:59
           "house dinner"
         when start.getHours() >= 16
           "dinner"
@@ -145,7 +146,7 @@ getLocDetails = (id, loc) ->
     return {
       event_changes
       status
-      id
+      id : loc.id
       name : loc.name
       type : if loc.is_dining_hall then "hall" else "cafe"
     }
@@ -201,7 +202,7 @@ post:
 ###
 getResult = ->
   Promise
-  .all(getLocDetails id, loc for own id, loc of cueats.ALL)
+  .all((getLocDetails loc) for loc in cueats.ALL)
   .catch (e) -> throw new Error('Error getting details\n' + e)
 
 module.exports = (where_my_router_at) ->
