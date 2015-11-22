@@ -1,8 +1,12 @@
+cache = require 'memory-cache'
+util  = require '../lib/common'
+ONE_DAY = 86400000
 
 module.exports = (router_factory) ->
   util   = require '../lib/common.coffee'
   cueats = require 'cornell-dining'
   router = router_factory()
+
 
   router
     ##
@@ -14,14 +18,22 @@ module.exports = (router_factory) ->
         when undefined, null, '' then []
         else cueats.DATE_RANGE.apply(cueats, req.params.dater.split('-'))
  
-      (cueats.get_events location, dater).then (arr) ->
-        console.log "#{arr.length} events got"
- 
-        acc = {}
-        for e in arr
-          acc[e.location] = [] if not acc[e.location]
-          acc[e.location].push(e)
- 
-        res.json(acc)
- 
-      .catch(res.json)
+
+      cache_val = cache.get(req.params.locations + req.params.dater)
+      
+      if cache_val
+        res.json(cache_val)
+      else 
+        (cueats.get_events location, dater).then (arr) ->
+  
+          cache.put(req.params.locations + req.params.dater, arr, ONE_DAY)
+          util.log "#{arr.length} events got. will cache for a day"
+  
+          acc = {}
+          for e in arr
+            acc[e.location] = [] if not acc[e.location]
+            acc[e.location].push(e)
+  
+          res.json(acc)
+  
+        .catch(res.json)

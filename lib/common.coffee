@@ -1,3 +1,5 @@
+chalk = require('chalk');
+
 module.exports = 
   ##
   # Returns an array from the comma-separated values 
@@ -19,3 +21,7 @@ module.exports =
     list[(if i > -1 then i else 0)]
   
     
+  log : ->
+    args = Array.prototype.slice.call(arguments)
+    args.unshift(chalk.green "#{new Date()}: ")
+    console.log.apply(@, args)

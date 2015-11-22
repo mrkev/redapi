@@ -26,6 +26,7 @@
     "npm": ">= 1.2.0"
   },
   "dependencies": {
+    "chalk": "^1.1.1",
     "coffee-script": "^1.8.0",
     "config-multipaas": "^0.1.0",
     "cornell-dining": "^0.2.3",
@@ -34,6 +35,7 @@
     "es6-promise": "^3.0.2",
     "express": "^4.9.5",
     "iroh": "git+https://github.com/mrkev/iroh.git",
+    "memory-cache": "^0.1.4",
     "request-promise": "^0.4.3"
   },
   "devDependencies": {},
