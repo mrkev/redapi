@@ -3,6 +3,9 @@ rp      = require 'request-promise'
 cueats  = require 'cornell-dining'
 Promise = require('es6-promise').Promise
 
+##
+# TODO: Doesn't throw errors properly /: 
+
 # pre: d is Date object
 # post: (h|hh):mm (am|pm)
 getTime = (d) -> d.toString('H:mm tt').toLowerCase()
@@ -43,7 +46,7 @@ getLocDetails = (loc) ->
             "&key=AIzaSyBnR3NSTeZw4TBak_kW6uAhe38ooEzVW8U"
 
   rp(FRONT_URL + loc.cal_id + END_URL)
-  .then (response) ->
+  .then((response) ->
 
     # list of events
     events = (JSON.parse response).items
@@ -141,55 +144,19 @@ getLocDetails = (loc) ->
     # Only the first change-time has the chance of 
     # being less than now. If the first two were
     # the event wouldn't be in our API call to Google
-    event_changes.shift() if event_changes[0].time < now
+    
+    event_changes.shift() if event_changes[0]?.time < now
 
     return {
       event_changes
       status
       id : loc.id
       name : loc.name
-      type : if loc.is_dining_hall then "hall" else "cafe"
+      type : if cueats.ALL_HALLS.indexOf(loc.id) > -1 then "hall" else "cafe"
     }
-
-    # # pre: e is Google Calendar event
-    # # eg.
-    # #   { summary: 'Lunch until 2pm',
-    # #     start:
-    # #     { dateTime: '2015-08-31T11:00:00-04:00',
-    # #       timeZone: 'America/New_York' },
-    # #     end:
-    # #     { dateTime: '2015-08-31T14:00:00-04:00',
-    # #       timeZone: 'America/New_York' } }
-    # # 
-    # # post: sets change_time, is_open, is_almost_open
-    # getOpenStatus = (e) ->
-    #   # event summary contains closed -> not an open event
-    #   return if e.summary.search /closed/i > -1
-
-    #   start = Date.parse e.start.dateTime
-    #   # if change_time not set yet, or this event continues the previous event continue
-    #   return if !(!change_time or !prevEnd or start.equals(prevEnd))
-
-    #   end = Date.parse(e.end.dateTime)
-    #   prevEnd = end
-    #   if now >= start && now < end 
-    #     # we are in this event, so set it to be open until the end
-    #     change_time = end.getTime()
-    #   else if now < start
-    #     # we are before this event, so set it as closed until the start
-    #     change_time = start.getTime()
-
-    # # run getOpenStatus over the events
-    # # (getOpenStatus event) for event in events
-
-    # return {
-    #   event_changes
-    #   status
-    #   id
-    #   name : loc.name
-    #   type : if loc.is_dining_hall then "hall" else "cafe"
-    # }
-
+  )
+  .catch (e) ->
+    throw e;
 ###
 post:
   Promise resolving to object:
