@@ -1,62 +1,62 @@
-RedAPI v4.2.2
+RedAPI v4.2.3
 
 
 Usage:
 
 PATH                      DESCRIPTION
-  
+
 /                         Returns this page (plain text format).
-  
-  
+
+
 /////////////////////////////////// DINNING ///////////////////////////////////
-  
-GENERAL   /dining                   
-              
-              Returns array of id’s for all dining 
+
+GENERAL   /dining
+
+              Returns array of id’s for all dining
               options with information in this API.
-          
+
           /dining/location_status/
-          
+
               Status information for all the locations.
-          
+
 MENUS     /dining/menu/:locations
           /dining/menu/:locations/:meals
           /dining/menu/:locations/:meals/:sort
-          
-            :locations - Comma separated dinning hall ids. 
+
+            :locations - Comma separated dinning hall ids.
                 Note: not all halls have menus.
-            
-            :meals - Comma separated. One or more of: 
-                Breakfast 
-                Lunch 
+
+            :meals - Comma separated. One or more of:
+                Breakfast
+                Lunch
                 Brunch
                 Dinner
                 General
-          
+
             :sort - One of
-              MEALS      : returns object with 
+              MEALS      : returns object with
                            meal keys, dinning hall values
-              LOCATIONS  : returns object with 
+              LOCATIONS  : returns object with
                            location keys, meal values
-          
+
             Sample Queries:
             eg. /dining/menu/okenshields,north_star/Breakfast/MEALS
             eg. /dining/menu/risley/Breakfast
             eg. /dining/menu/bear_necesities
-        
-        
+
+
 EVENTS    /dining/event/:locations/:date_range
 
           :locations - Comma separated dinning hall ids.
-          
-          :date_range - A range in format 
+
+          :date_range - A range in format
 
               'start'-'end'
 
-            All events from 'start' up to but not 
+            All events from 'start' up to but not
             including end will be returned.
 
-            Date range supports any format supported 
+            Date range supports any format supported
             by the datejs library. Eg.
 
               - today-tomorrow
@@ -69,6 +69,11 @@ EVENTS    /dining/event/:locations/:date_range
 
 
 Changelog:
+
+v4.2.3
+- Fix bugs in location status. "type" property in halls and cafe's is now proper
+  "hall" or "cafe", not just "cafe" Location status might return an empty array for
+  locations that are permanently closed.
 
 v4.2.2
 - Add caching for /dining/event/:locations/:date_range
