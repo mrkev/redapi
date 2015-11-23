@@ -26,13 +26,14 @@ module.exports = (router_factory) ->
       else 
         (cueats.get_events location, dater).then (arr) ->
   
-          cache.put(req.params.locations + req.params.dater, arr, ONE_DAY)
           util.log "#{arr.length} events got. will cache for a day"
   
           acc = {}
           for e in arr
             acc[e.location] = [] if not acc[e.location]
             acc[e.location].push(e)
+
+          cache.put(req.params.locations + req.params.dater, acc, ONE_DAY)
   
           res.json(acc)
   
