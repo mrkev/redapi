@@ -100,6 +100,7 @@ getLocDetails = (loc) ->
       else
         "closed"
 
+    now = new Date()
     event_changes = events[...3].reduce (acc, e, i) ->
 
       return acc if (e.summary.search /closed/i) > -1
@@ -138,6 +139,7 @@ getLocDetails = (loc) ->
       return acc
 
     , []
+    .filter (x) -> x.time > now
 
     # console.log event_changes, id
 

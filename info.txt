@@ -1,4 +1,4 @@
-RedAPI v4.2.4
+RedAPI v4.2.5
 
 
 Usage:
@@ -69,6 +69,10 @@ EVENTS    /dining/event/:locations/:date_range
 
 
 Changelog:
+
+v4.2.5
+- Fix bug: Event changes in /location_status included event changes not strictly
+  after current time.
 
 v4.2.4
 - Fix bug: Event changes in /location_status would have status of 'close' instead
