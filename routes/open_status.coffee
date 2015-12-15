@@ -132,7 +132,7 @@ getLocDetails = (loc) ->
 
       acc.push {
         time : end
-        status : 'close'
+        status : 'closed'
       }
 
       return acc

@@ -1,4 +1,4 @@
-RedAPI v4.2.3
+RedAPI v4.2.4
 
 
 Usage:
@@ -69,6 +69,10 @@ EVENTS    /dining/event/:locations/:date_range
 
 
 Changelog:
+
+v4.2.4
+- Fix bug: Event changes in /location_status would have status of 'close' instead
+  of 'closed'.
 
 v4.2.3
 - Fix bugs in location status. "type" property in halls and cafe's is now proper
